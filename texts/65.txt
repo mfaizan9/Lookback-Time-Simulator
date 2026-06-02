@@ -1,0 +1,27 @@
+This simulator shows how the finite speed of light and the great distances 
+--- RECORDSEPARATOR ---
+to most astronomical objects cause us to observe things as they were in 
+--- RECORDSEPARATOR ---
+the past.
+--- RECORDSEPARATOR ---
+The top panel shows an observer who is looking at a distant star. The 
+--- RECORDSEPARATOR ---
+distance between the star and observer is given in light-years (ly), which 
+--- RECORDSEPARATOR ---
+is the distance light travels in one year.
+--- RECORDSEPARATOR ---
+The thought bubble above the observer's head shows what he sees at the 
+--- RECORDSEPARATOR ---
+moment in time indicated by the cursor in the timeline. When the 
+--- RECORDSEPARATOR ---
+go 
+--- RECORDSEPARATOR ---
+supernova
+--- RECORDSEPARATOR ---
+ button is pressed the star will explode and the simulation will 
+--- RECORDSEPARATOR ---
+start running. An expanding circle represents the light from the explosion. 
+--- RECORDSEPARATOR ---
+Only when that circle reaches the observer does he know that the star has 
+--- RECORDSEPARATOR ---
+exploded.
