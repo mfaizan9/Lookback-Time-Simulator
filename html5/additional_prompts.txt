@@ -1,0 +1,30 @@
+================================================================================
+ADDITIONAL PROMPTS  --  Lookback Time Simulator
+Follow-up change requests made after the initial prompt_v6.txt conversion.
+Recorded verbatim, in the order they were given.
+================================================================================
+
+--------------------------------------------------------------------------------
+ROUND 1
+--------------------------------------------------------------------------------
+1. The distance should be shown below the curly braces (should be centered
+   aligned with the braces)
+2. the sliders of supernova occur and distance should be aligned w.r.t bottom.
+   So, bring the distance slider little down.
+3. The buttons should be blue (pick from foundation) with white text.
+4. Responsivity: while the screen width gets reduced, also reduce the box of
+   star and observer by keeping the aspect ratio the same
+
+--------------------------------------------------------------------------------
+ROUND 2
+--------------------------------------------------------------------------------
+1. when supernova is observed, the simulation should stop after 2 seconds.
+2. Move these boxes little up.
+   (selected elements: the "Supernova" and "Observer" control fieldsets)
+3. the time and distances below the slider bars should move lil bit up, and
+   should be left aligned.
+4. is observed:   remove the spacing and add the final answer in a box.
+
+================================================================================
+END
+================================================================================
