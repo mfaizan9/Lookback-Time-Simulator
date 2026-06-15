@@ -1,0 +1,298 @@
+/* =====================================================================
+   Lookback Time Simulator -- sim-specific styles ONLY.
+   The shared look/palette comes from foundation/kl-unl.css; this file
+   layers sim-specific structure on top without editing the foundation.
+   ===================================================================== */
+
+:root {
+  /* Sim spacing scale (rem) -- reused for consistent rhythm. */
+  --sim-gap:        0.75rem;
+  --sim-pad:        1rem;
+  /* Display "sky" colours (the original Flash stage was a black sky). */
+  --sim-sky:        #04060f;
+  --sim-sky-border: #767676;
+}
+
+/* Larger, zoomable body copy (foundation default is 0.9rem; rule 10 floor
+   is ~1.125rem). Everything is in rem/em so it tracks the browser setting. */
+.sim-layout {
+  font-size:      1.125rem;
+}
+
+/* Both panels stack full-width in reading order (mirrors the original's two
+   stacked panels) and the layout reflows to a single column for free. */
+.sim-layout {
+  grid-template-columns: 1fr;
+  gap:            0.5rem;
+  padding:        0.25rem;
+}
+
+.sim-panel {
+  padding-bottom: var(--sim-pad);
+  /* Allow the panel (a grid item) to shrink below the canvas's intrinsic
+     width, so a narrow viewport doesn't get horizontal overflow. */
+  min-width:      0;
+}
+
+.sim-panel__body {
+  padding:        0 var(--sim-pad);
+  min-width:      0;
+}
+
+.sim-canvas-wrap {
+  min-width:      0;
+}
+
+.panel__heading {
+  font-size:      1.25rem;
+}
+
+/* ---- Canvas stage (scales to fit, preserves aspect ratio) ---- */
+.sim-canvas-wrap {
+  position:       relative;
+  line-height:    0;
+}
+
+.sim-canvas {
+  display:        block;
+  width:          100%;          /* scales with the panel width ... */
+  height:         auto;          /* ... keeping the aspect ratio */
+  max-width:      100%;
+  touch-action:   none;   /* draggable surfaces: don't scroll/zoom the page */
+}
+
+#display-canvas {
+  background:     var(--sim-sky);
+  border:         1px solid var(--sim-sky-border);
+  border-radius:  2px;
+  aspect-ratio:   604 / 240;     /* shrink the box proportionally as width drops */
+}
+
+#timeline-canvas {
+  background:     var(--background-color, #fff);
+  aspect-ratio:   600 / 120;
+}
+
+/* Distance label, centered under the brace, over the dark display canvas. */
+.sim-display__overlay {
+  position:       absolute;
+  left:           0;
+  top:            0;
+  width:          100%;
+  height:         100%;
+  pointer-events: none;
+}
+
+.sim-dist-label {
+  position:       absolute;
+  transform:      translateX(-50%);
+  white-space:    nowrap;
+  line-height:    1;
+  color:          #f3f4ee;       /* light text on the night sky */
+  font-size:      0.95rem;
+}
+
+/* ---- Lookback-time equation ---- */
+.sim-equation {
+  margin:         var(--sim-gap) 0 0;
+  padding:        0.5rem 0.75rem;
+  text-align:     center;
+  border:         1px solid var(--border-color, #767676);
+  border-radius:  3px;
+  background:     #f6f8fb;
+  overflow-x:     auto;          /* long equation scrolls inside the box,
+                                    never pushing the page wider */
+}
+
+.sim-equation__math {
+  font-size:      1.2rem;
+  line-height:    1.4;
+}
+
+/* ---- Timeline overlay (numeric tick + moving labels) ---- */
+.sim-timeline {
+  margin-bottom:  0.25rem;       /* tighter: bring the controls up */
+}
+
+.sim-timeline__overlay {
+  position:       absolute;
+  left:           0;
+  top:            0;
+  width:          100%;
+  height:         100%;
+  pointer-events: none;
+}
+
+.sim-tick-label,
+.sim-marker-label {
+  position:       absolute;
+  transform:      translateX(-50%);
+  white-space:    nowrap;
+  line-height:    1;
+  font-size:      0.8rem;
+  color:          var(--foreground-color, #1a1a1a);
+}
+
+.sim-marker-label {
+  font-size:      0.85rem;
+  font-weight:    bold;
+}
+
+.sim-marker-label--observed {
+  color:          #8a1500;
+}
+
+/* ---- Controls ---- */
+.sim-controls {
+  margin-top:     0.25rem;        /* tighter: bring the control boxes up */
+  display:        grid;
+  grid-template-columns: 1fr 1fr;
+  gap:            var(--sim-gap) 1.5rem;
+  align-items:    start;
+}
+
+.sim-fieldset {
+  padding:        0;
+  margin:         0;
+}
+
+/* Align labels and their values/inputs down a shared column. */
+.sim-row {
+  grid-template-columns: max-content minmax(0, 1fr) auto;
+  align-items:    center;
+  gap:            0.4rem 0.6rem;
+  margin-bottom:  0.5rem;
+}
+
+/* Slider rows stack: label, slider, then the value left-aligned and pulled
+   up close to the slider. */
+.sim-row--slider {
+  display:        flex;
+  flex-direction: column;
+  align-items:    stretch;
+  gap:            0;
+}
+
+.sim-row--slider .sim-value {
+  text-align:     left;          /* left-align the value under the slider */
+  min-width:      0;
+  margin-top:     -0.35rem;       /* nudge it up toward the slider */
+  padding-left:   0.1rem;
+}
+
+/* Push the distance slider down so it lines up (bottom-aligned) with the
+   timeline-year slider, whose column has an extra "supernova occurs" row
+   above it. Only applies in the two-column layout (reset when stacked). */
+.sim-row--align-slider {
+  margin-top:     2.5rem;
+}
+
+.sim-year-input {
+  width:          7rem;
+}
+
+/* Numeric readouts: right-aligned so digits line up. */
+.sim-value {
+  font-variant-numeric: tabular-nums;
+  text-align:     right;
+  min-width:      4.5rem;
+  font-size:      1rem;
+}
+
+/* "is observed:" row -- label and boxed answer sit close together. */
+.sim-row--observed {
+  display:        flex;
+  align-items:    center;
+  gap:            0.5rem;
+  margin-bottom:  0.5rem;
+}
+
+.sim-value--boxed {
+  text-align:     left;
+  min-width:      0;
+  padding:        0.25rem 0.6rem;
+  border:         1px solid var(--border-color, #767676);
+  border-radius:  3px;
+  background:     var(--background-color, #ffffff);
+}
+
+.sim-button-row {
+  grid-column:    1 / -1;
+  gap:            0.75rem;
+}
+
+/* Blue buttons with white text, using the foundation palette variables
+   (the foundation .button class sets size/padding but not colors). */
+.sim-button {
+  flex:           1 1 0;
+  font-size:      1rem;
+  font-weight:    600;
+  color:          var(--button-foreground-color, #ffffff);
+  background:     var(--button-background-color, #005a9c);
+  border:         1px solid var(--button-background-color, #005a9c);
+  border-radius:  3px;
+}
+
+.sim-button:hover:not(:disabled) {
+  filter:         brightness(var(--button-hover-darken, 0.9));
+}
+
+.sim-button:disabled {
+  opacity:        0.55;
+  cursor:         not-allowed;
+}
+
+/* ---- Native range slider: comfortable, keyboard-friendly, big track ---- */
+.sim-slider {
+  width:          100%;
+  min-height:     2.75rem;       /* >=44px touch target */
+  accent-color:   var(--button-background-color, #005a9c);
+  cursor:         pointer;
+}
+
+.sim-slider:disabled {
+  opacity:        0.5;
+  cursor:         not-allowed;
+}
+
+/* ===== Responsive: tablet / phone portrait ===== */
+@media (max-width: 56rem) {
+  .sim-controls {
+    grid-template-columns: 1fr;   /* stack the two control groups */
+  }
+  .sim-row--align-slider {
+    margin-top:   0.5rem;         /* stacked: no cross-column alignment needed */
+  }
+}
+
+@media (max-width: 30rem) {
+  .sim-layout {
+    font-size:    1.0625rem;
+  }
+  .sim-button-row {
+    flex-wrap:    wrap;
+  }
+  .sim-equation__math {
+    font-size:    1.05rem;
+  }
+  /* Thin the 10 timeline labels to 5 evenly-spaced ones so they don't overlap
+     at phone-portrait width (the axis tick marks on the canvas still show all). */
+  .sim-tick-label[data-tick="1"],
+  .sim-tick-label[data-tick="3"],
+  .sim-tick-label[data-tick="5"],
+  .sim-tick-label[data-tick="7"],
+  .sim-tick-label[data-tick="9"] {
+    display:      none;
+  }
+  .sim-tick-label {
+    font-size:    0.72rem;
+  }
+}
+
+/* ===== Reduced motion: the JS jumps to end states instead of animating;
+   nothing here flashes. ===== */
+@media (prefers-reduced-motion: reduce) {
+  .sim-canvas {
+    /* no CSS transitions to suppress; canvas redraws are state-driven */
+  }
+}
