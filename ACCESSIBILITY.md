@@ -25,13 +25,14 @@ description regions that restate what the diagram currently shows:
   reached the observer, paused, resumed, reached the end, reset).
 
 ## Math / equations (rules 8 & 8a)
-- The lookback relation and **every** numeric readout (timeline tick labels,
-  distance, observed year, current year) are typeset by **MathJax** (LaTeX,
-  SVG output). Right-clicking any of them opens MathJax's own context menu
-  (*Show Math As → TeX / MathML*); the menu is left enabled and the
-  `contextmenu` event is not trapped.
-- The lookback equation is paired with a spoken description string
-  (`#lookback-eqn-sr`) so the math is also read aloud.
+- **Every** numeric readout (timeline tick labels, distance, observed year,
+  current year, and the distance label under the brace) is typeset by
+  **MathJax** (LaTeX, SVG output). Right-clicking any of them opens MathJax's
+  own context menu (*Show Math As → TeX / MathML*); the menu is left enabled and
+  the `contextmenu` event is not trapped.
+  (The standalone lookback-relation equation box was removed at the user's
+  request; the same relationship is still conveyed by the live "is observed"
+  readout and the screen-reader descriptions.)
 - **Not MathJax:** the editable "supernova occurs" `<input>` (form controls
   cannot host MathJax). The same year appears MathJax-typeset in the equation.
 - Tick labels and the "SN occurs"/"SN observed" labels live in an **HTML
@@ -92,7 +93,80 @@ state object as the keyboard controls, so they stay in sync.
   hover-only affordances.
 
 ## Known items for human QA
-- Verify announcement wording/timing with NVDA/JAWS/VoiceOver (the live regions
-  fire on commit, not per animation frame).
+- Verify announcement wording/timing with NVDA/JAWS/VoiceOver (the live region
+  fires on commit, not per animation frame).
 - Confirm the dark display panel's decorative canvas is correctly ignored by
-  screen readers while the live descriptions convey its state.
+  screen readers while the description conveys its state.
+
+================================================================================
+
+## AUDIO / SCREEN-READER PASS
+
+A narration-only pass (no behavior/layout/visual/physics changes) to make the
+sim usable by audio alone on **NVDA** (Windows; Chrome + Firefox) and
+**VoiceOver** (macOS; Chrome + Safari). Standard ARIA only — no reader-specific
+hacks. **Final confirmation still requires a human listening test on NVDA and
+VoiceOver; screen-reader compatibility is NOT claimed as verified here.**
+
+### Values made units-complete (quantity + number + unit, spoken)
+All spoken strings use unit **words**, not symbols, and never expose a bare
+signed number.
+
+| Control / readout | How spoken value is exposed | Example spoken string |
+|---|---|---|
+| **Timeline year (cursor)** slider (`#year-range`) | `aria-valuetext`, updated on every change (the raw `value`/`aria-valuenow` stays the signed year) | label "timeline year (cursor)" + **"1200 AD"** / **"8000 BC"** |
+| **Distance** slider (`#dist-range`) | `aria-valuetext`, updated on every change | label "distance" + **"3000 light years"** |
+| **"is observed"** boxed readout (`#observed-output`) | MathJax box set `aria-hidden`; an adjacent `.sr-only` (`#observed-sr`) carries the value, read after the visible "is observed:" label | **"is observed: 4200 AD"** |
+| **"supernova occurs"** input (`#sn-year-input`) | native `<label>` + `.sr-only` hint (`#sn-year-hint`) | "supernova occurs: 1200 AD … Type a year such as 1200 AD or 500 BC, then press Enter." |
+| Year / distance MathJax outputs under the sliders | `aria-hidden="true"` (visual only); spoken value comes from the slider's `aria-valuetext`, so no garbled "l y" / duplicate reading | — |
+| Distance label under the brace, timeline tick labels, SN markers | inside `aria-hidden` overlays (decorative duplicates of spoken values) | — |
+
+### Unit-word mappings applied
+- `ly` → **"light years"** (slider `aria-valuetext`, live region, canvas
+  descriptions).
+- Years are spoken with their era word-pair **"AD" / "BC"** (e.g. `-7999` →
+  "8000 BC"), so a leading minus is never read — `fmtYear()` already formats
+  this and it is reused for every spoken string.
+- (No degrees / arcmin / eV / kelvin etc. occur in this sim.)
+
+### Live region (the single status channel)
+- One `aria-live="polite"` region: `#sr-status`. It announces **committed**
+  changes only (slider release / Enter / drag end / state transitions), so there
+  is no per-tick flooding and no double/triple announcement.
+- Wording (units-complete), driven from state:
+  - Cursor / supernova / observed: *"Cursor at 1200 AD. Supernova occurs 1200 AD.
+    Light is observed in 4200 AD."*
+  - Distance: *"Observer distance 3000 light years. Light is observed in 4200 AD."*
+  - Animation events: *"Supernova triggered…"*, *"The light has reached the
+    observer in 4200 AD. The observer now sees the supernova. Stopping shortly."*,
+    *"Stopped, 2 seconds after the observer saw the supernova (4200 AD). Press
+    resume to continue or reset."*, *"Paused."*, *"Resumed."*, *"Simulation reset."*
+
+### Canvas description (read on navigation, not auto-announced)
+- `#display-canvas` and `#timeline-canvas` are `role="img"` with `aria-label`
+  and `aria-describedby` pointing at `.sr-only` paragraphs (`#display-desc`,
+  `#timeline-desc`). These are **not** live regions (so they don't compete with
+  `#sr-status`); they are updated from the single render/state path and are read
+  when the reader reaches the canvas.
+  - Display: *"A star at the left and an observer 3000 light years to the right.
+    The star has not yet exploded. Press go supernova to start."* (state-dependent)
+  - Timeline: same sentence as the timeline live announcement.
+- Decorative overlays (tick labels, brace distance label, SN markers) are inside
+  `aria-hidden="true"` containers, so they add no audio noise.
+
+### Controls (keyboard + name/value/unit)
+- Both sliders are native `<input type="range">` — fully operable by arrows /
+  PageUp/Down / Home/End and not "stuck" — and announce label + `aria-valuetext`
+  (with unit). Distance is enabled only in setup; the year cursor is disabled
+  only while running (matching the sim's drag rules); Tab always moves away.
+- Buttons have descriptive names. The pause/resume button gets
+  `aria-label="pause or resume, currently unavailable"` while it shows "…" (so
+  it is not read as "dot dot dot"); otherwise its name is the visible "pause" /
+  "resume" / "go supernova" / "reset".
+- Related controls are grouped with `<fieldset>/<legend>` ("Supernova",
+  "Observer") so context is spoken.
+
+### Unchanged
+Behavior, numbers, physics, animation, layout, visuals, on-screen text, MathJax
+usage, responsiveness and the 2-second auto-stop are all intact; this pass only
+added/repaired ARIA, units in spoken strings, and the single live region.
