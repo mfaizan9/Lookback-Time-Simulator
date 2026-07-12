@@ -752,21 +752,15 @@
       ctx.beginPath(); ctx.moveTo(x, AXIS_Y - 5); ctx.lineTo(x, AXIS_Y + 5); ctx.stroke();
     });
 
-    // SN occurs marker (+ stalk while running)
+    // SN occurs marker: a dashed vertical line from its label down to the axis
+    // (drawn ABOVE the axis so it never covers the year labels below it).
     var snX = cursorScreenX(S.supernovaYear);
-    if (S.state !== 0) {
-      ctx.save();
-      ctx.setLineDash([3, 3]);
-      ctx.strokeStyle = '#444';
-      ctx.beginPath(); ctx.moveTo(snX, AXIS_Y); ctx.lineTo(snX, 20); ctx.stroke();
-      ctx.restore();
-    }
-    triangleMarker(ctx, snX, AXIS_Y, '#333', 'up');
+    dashedMarker(ctx, snX, '#555');
 
-    // SN observed marker
+    // SN observed marker: dashed vertical line (red), once the light is observed
     if (S.observedVisible) {
       var obX = cursorScreenX(observedYear());
-      triangleMarker(ctx, obX, AXIS_Y, '#8a1500', 'up');
+      dashedMarker(ctx, obX, '#8a1500');
     }
 
     // cursor (downward triangle pointing at the axis)
@@ -774,6 +768,19 @@
     var draggable = (S.state !== 1);
     triangleMarker(ctx, cX, AXIS_Y, draggable ? '#2a6f97' : '#9aa0a6', 'down');
 
+    ctx.restore();
+  }
+
+  // Dashed vertical line from just under the top label down to the axis.
+  function dashedMarker(ctx, x, color) {
+    ctx.save();
+    ctx.setLineDash([3, 3]);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(x, 18);
+    ctx.lineTo(x, AXIS_Y);
+    ctx.stroke();
     ctx.restore();
   }
 
