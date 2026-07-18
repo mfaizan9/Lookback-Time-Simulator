@@ -93,21 +93,24 @@ permission / astro.unl.edu) matching `texts/3,5,8,9`.
    reaches the observer precisely when the light has travelled `observerDistance`
    light-years. The timeline keeps the original coordinate math verbatim.
 
-4. **MathJax is the only math renderer, and is serialized.** Every number, unit
-   and the lookback relation are typeset by MathJax (LaTeX). The foundation's
-   `klunlShowEquation()` typesets immediately and non-serialized, which — when
-   combined with the other readouts — triggers MathJax v3's "replaceChild of
-   null" crash. To keep the console clean, **all** math nodes (equation,
-   readouts, axis tick labels) are funneled through one serialized
-   `typesetClear → set HTML → typesetPromise` queue, scheduled with `setTimeout`
-   (not `requestAnimationFrame`, so typesetting still happens when the tab is
-   backgrounded). The foundation files themselves are untouched; `svg.fontCache`
-   is set to `none` in `index.html` to avoid the shared-`<defs>` variant of the
-   same bug.
+4. **MathJax is the only math renderer, and is serialized.** Every number and
+   unit (timeline tick labels, the year/distance/observed readouts, and the
+   distance label under the brace) is typeset by MathJax (LaTeX). MathJax v3
+   throws a "replaceChild of null" crash if `typesetPromise()` runs concurrently
+   on overlapping content or if a node's `innerHTML` is replaced without
+   `typesetClear()`. To keep the console clean, **all** math nodes are funneled
+   through one serialized `typesetClear → set HTML → typesetPromise` queue,
+   scheduled with `setTimeout` (not `requestAnimationFrame`, so typesetting still
+   happens when the tab is backgrounded). The foundation files themselves are
+   untouched; `svg.fontCache` is set to `none` in `index.html` to avoid the
+   shared-`<defs>` variant of the same bug. (The standalone lookback-relation
+   equation box that originally used `klunlShowEquation()` was removed at the
+   user's request — see deviation 9.)
 
 5. **Editable year field.** The "supernova occurs" value is a real `<input>`
    form control, so its text is not MathJax-typeset (form fields cannot be);
-   the same year is shown MathJax-typeset in the live equation and announced.
+   the same year is shown MathJax-typeset in the "is observed" readout and
+   announced.
 
 6. **Reduced motion.** With `prefers-reduced-motion: reduce`, pressing
    *go supernova* jumps straight to the final state (light fully expanded,
@@ -128,3 +131,10 @@ permission / astro.unl.edu) matching `texts/3,5,8,9`.
    via the `sim-reset` event, wired to restore the exact initial state. These
    are distinct, as in the original (which had both a sim control and a title-bar
    reset).
+
+9. **Removed the equation box and the on-screen explainer paragraph.** Per
+   request, the standalone lookback-relation equation
+   (\(t_\text{seen} = t_\text{SN} + d\)) box and the instructional `panel__help`
+   paragraph under the display were removed. The pedagogy is still present via
+   the live "is observed" readout and the screen-reader descriptions, and the
+   full instructions remain in the masthead **Help** dialog.

@@ -92,23 +92,6 @@
   font-size:      0.95rem;
 }
 
-/* ---- Lookback-time equation ---- */
-.sim-equation {
-  margin:         var(--sim-gap) 0 0;
-  padding:        0.5rem 0.75rem;
-  text-align:     center;
-  border:         1px solid var(--border-color, #767676);
-  border-radius:  3px;
-  background:     #f6f8fb;
-  overflow-x:     auto;          /* long equation scrolls inside the box,
-                                    never pushing the page wider */
-}
-
-.sim-equation__math {
-  font-size:      1.2rem;
-  line-height:    1.4;
-}
-
 /* ---- Timeline overlay (numeric tick + moving labels) ---- */
 .sim-timeline {
   margin-bottom:  0.25rem;       /* tighter: bring the controls up */
@@ -271,9 +254,6 @@
   }
   .sim-button-row {
     flex-wrap:    wrap;
-  }
-  .sim-equation__math {
-    font-size:    1.05rem;
   }
   /* Thin the 10 timeline labels to 5 evenly-spaced ones so they don't overlap
      at phone-portrait width (the axis tick marks on the canvas still show all). */

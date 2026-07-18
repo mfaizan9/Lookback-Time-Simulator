@@ -249,6 +249,11 @@
   function syncReadouts() {
     if (!el.yearValue) { return; }
     setPlain(el.yearValue, fmtYear(S.displayedYear));
+    // Screen-reader spoken value of the year slider: "1200 AD" / "8000 BC"
+    // (never the raw signed number). The slider's <label> supplies the name.
+    el.yearRange.setAttribute('aria-valuetext', fmtYear(S.displayedYear));
+    // Spoken equivalent of the boxed "is observed" value.
+    if (el.observedSr) { el.observedSr.textContent = fmtYear(observedYear()); }
     if (document.activeElement !== el.yearRange) {
       el.yearRange.value = String(Math.round(S.displayedYear));
     }
@@ -262,6 +267,8 @@
       setPlain(el.distValue, S.observerDistance + ' ly');
       setPlain(el.distLabel, S.observerDistance + ' ly');
     }
+    // Spoken value of the distance slider: "3000 light years" (unit as words).
+    el.distRange.setAttribute('aria-valuetext', S.observerDistance + ' light years');
     positionDisplayOverlay();
   }
 
@@ -394,6 +401,7 @@
     el.observed     = document.getElementById('observed-output');
     el.distRange    = document.getElementById('dist-range');
     el.distValue    = document.getElementById('dist-value');
+    el.observedSr   = document.getElementById('observed-sr');
     el.displayCanvas= document.getElementById('display-canvas');
     el.displayOverlay = document.getElementById('display-overlay');
     el.distLabel    = document.getElementById('dist-brace-label');
@@ -428,6 +436,14 @@
       el.pauseResume.textContent = '...';
       el.pauseResume.disabled = true;
     }
+    // The pause/resume button shows "..." when unavailable; give it a spoken
+    // name instead of "dot dot dot".
+    if (el.pauseResume.textContent === '...') {
+      el.pauseResume.setAttribute('aria-label', 'pause or resume, currently unavailable');
+    } else {
+      el.pauseResume.removeAttribute('aria-label');
+    }
+
     // Draggability: observer only in state 0; cursor whenever state != 1.
     el.distRange.disabled = (S.state !== 0);
     el.snInput.disabled = !snFieldEditable();
@@ -457,7 +473,7 @@
     });
     el.yearRange.addEventListener('change', function () {
       updateMathReadouts();
-      announceTimeline();
+      announce(timelineSentence());
     });
 
     // Distance slider
@@ -467,7 +483,7 @@
     });
     el.distRange.addEventListener('change', function () {
       updateMathReadouts();
-      announce('Observer distance ' + S.observerDistance + ' light-years.');
+      announce(distanceSentence());
     });
 
     // SN year text field: commit on Enter or blur (mirrors commitSNOccursFieldChanges)
@@ -486,7 +502,7 @@
     onYearCursorDragged(parsed);            // NaN -> revert via updateSim
     el.snInput.value = fmtYear(S.supernovaYear);
     updateMathReadouts();
-    announceTimeline();
+    announce(timelineSentence());
   }
 
   // ==================================================================
@@ -555,17 +571,7 @@
   function mjRaw(node, html) { _mjEnqueue(node, html); }
 
   function updateMathReadouts() {
-    var sn = S.supernovaYear, d = S.observerDistance, obs = observedYear();
-
-    // Live lookback-time relation (the math klunl.js would show; typeset via the
-    // serialized queue).  Pair with a spoken screen-reader description.
-    var eqnLatex = 't_{\\text{seen}} = t_{\\text{SN}} + d = ' +
-                   fmtYearTex(sn) + ' + ' + d + '\\,\\text{ly} = ' + fmtYearTex(obs);
-    var srMsg = 'The light is seen at ' + fmtYear(obs) + ', equal to the supernova year ' +
-                fmtYear(sn) + ' plus the ' + d + ' light-year distance.';
-    mjMath(document.getElementById('lookback-eqn'), eqnLatex);
-    var srEl = document.getElementById('lookback-eqn-sr');
-    if (srEl) { srEl.textContent = srMsg; }
+    var d = S.observerDistance, obs = observedYear();
 
     mjMath(el.yearValue, fmtYearTex(S.displayedYear));
     mjMath(el.distValue, d + '\\,\\text{ly}');
@@ -580,12 +586,25 @@
   // ==================================================================
   // Screen-reader descriptions / announcements
   // ==================================================================
+  // The ONE live region: announce committed changes (units-complete). The
+  // canvas descriptions (#display-desc / #timeline-desc) are NOT live -- they
+  // are read on navigation via aria-describedby -- so a single commit produces
+  // a single spoken announcement, never a double/triple.
   function announce(msg) { if (el.status) { el.status.textContent = msg; } }
 
-  function announceTimeline() {
-    el.timelineDesc.textContent =
-      'Cursor at ' + fmtYear(S.displayedYear) + '. Supernova occurs ' +
+  // Units-complete one-line timeline status (years spoken as "1200 AD"/"8000 BC").
+  function timelineSentence() {
+    return 'Cursor at ' + fmtYear(S.displayedYear) + '. Supernova occurs ' +
       fmtYear(S.supernovaYear) + '. Light is observed in ' + fmtYear(observedYear()) + '.';
+  }
+  function distanceSentence() {
+    return 'Observer distance ' + S.observerDistance + ' light years. Light is observed in ' +
+      fmtYear(observedYear()) + '.';
+  }
+
+  // Update the (non-live) timeline description used by aria-describedby.
+  function announceTimeline() {
+    el.timelineDesc.textContent = timelineSentence();
   }
 
   function updateDescriptions() {
@@ -733,21 +752,15 @@
       ctx.beginPath(); ctx.moveTo(x, AXIS_Y - 5); ctx.lineTo(x, AXIS_Y + 5); ctx.stroke();
     });
 
-    // SN occurs marker (+ stalk while running)
+    // SN occurs marker: a dashed vertical line from its label down to the axis
+    // (drawn ABOVE the axis so it never covers the year labels below it).
     var snX = cursorScreenX(S.supernovaYear);
-    if (S.state !== 0) {
-      ctx.save();
-      ctx.setLineDash([3, 3]);
-      ctx.strokeStyle = '#444';
-      ctx.beginPath(); ctx.moveTo(snX, AXIS_Y); ctx.lineTo(snX, 20); ctx.stroke();
-      ctx.restore();
-    }
-    triangleMarker(ctx, snX, AXIS_Y, '#333', 'up');
+    dashedMarker(ctx, snX, '#555');
 
-    // SN observed marker
+    // SN observed marker: dashed vertical line (red), once the light is observed
     if (S.observedVisible) {
       var obX = cursorScreenX(observedYear());
-      triangleMarker(ctx, obX, AXIS_Y, '#8a1500', 'up');
+      dashedMarker(ctx, obX, '#8a1500');
     }
 
     // cursor (downward triangle pointing at the axis)
@@ -755,6 +768,19 @@
     var draggable = (S.state !== 1);
     triangleMarker(ctx, cX, AXIS_Y, draggable ? '#2a6f97' : '#9aa0a6', 'down');
 
+    ctx.restore();
+  }
+
+  // Dashed vertical line from just under the top label down to the axis.
+  function dashedMarker(ctx, x, color) {
+    ctx.save();
+    ctx.setLineDash([3, 3]);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(x, 18);
+    ctx.lineTo(x, AXIS_Y);
+    ctx.stroke();
     ctx.restore();
   }
 
@@ -928,7 +954,7 @@
       dragging = false;
       try { c.releasePointerCapture(e.pointerId); } catch (x) {}
       updateMathReadouts();
-      announce('Observer distance ' + S.observerDistance + ' light-years.');
+      announce(distanceSentence());
     }
     c.addEventListener('pointerup', end);
     c.addEventListener('pointercancel', end);
@@ -963,7 +989,7 @@
       dragging = false;
       try { c.releasePointerCapture(e.pointerId); } catch (x) {}
       updateMathReadouts();
-      announceTimeline();
+      announce(timelineSentence());
     }
     c.addEventListener('pointerup', end);
     c.addEventListener('pointercancel', end);

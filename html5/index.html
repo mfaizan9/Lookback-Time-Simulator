@@ -37,25 +37,11 @@
               <span id="dist-brace-label" class="sim-dist-label"></span>
             </div>
           </div>
-
-          <!-- Live lookback-time relation, typeset by MathJax via klunlShowEquation. -->
-          <div class="sim-equation">
-            <div id="lookback-eqn" class="sim-equation__math" aria-hidden="true"></div>
-            <p id="lookback-eqn-sr" class="sr-only"></p>
-          </div>
-
-          <p class="panel__help">
-            The star is at the left and the observer is at the right; the distance
-            between them is given in light-years (ly). The thought bubble shows what
-            the observer sees at the moment marked by the cursor on the timeline. Press
-            <em>go supernova</em> to make the star explode; the expanding circle is the
-            light from the explosion, and the observer only learns of the explosion when
-            that circle reaches them.
-          </p>
         </div>
 
-        <!-- Text equivalent of the canvas, updated from state. -->
-        <p id="display-desc" class="sr-only" aria-live="polite"></p>
+        <!-- Text equivalent of the canvas (read when the screen reader reaches the
+             canvas via aria-describedby; the single live region is #sr-status). -->
+        <p id="display-desc" class="sr-only"></p>
       </section>
 
       <!-- ============================================================= -->
@@ -76,7 +62,7 @@
               <!-- Overlay layer (year ticks + moving labels), positioned in JS. -->
               <div id="timeline-overlay" class="sim-timeline__overlay" aria-hidden="true"></div>
             </div>
-            <p id="timeline-desc" class="sr-only" aria-live="polite"></p>
+            <p id="timeline-desc" class="sr-only"></p>
           </div>
 
           <div class="sim-controls">
@@ -95,15 +81,20 @@
 
               <div class="control-row sim-row sim-row--slider">
                 <label class="control-row__label" for="year-range" id="year-range-label">timeline year (cursor):</label>
+                <!-- aria-valuetext (set in JS) speaks the year + era, e.g. "1200 AD"
+                     / "8000 BC", instead of the raw signed number. -->
                 <input class="control-row__slider sim-slider" type="range" id="year-range"
                        min="-7999" max="10000" step="1" value="1200"
-                       aria-describedby="year-range-value">
-                <output class="sim-value" id="year-range-value" for="year-range"></output>
+                       aria-valuetext="1200 AD">
+                <!-- MathJax value is visual only; the spoken value is on the slider. -->
+                <output class="sim-value" id="year-range-value" for="year-range" aria-hidden="true"></output>
               </div>
 
               <div class="sim-row--observed">
-                <span class="control-row__label">is observed:</span>
-                <output class="sim-value sim-value--boxed" id="observed-output" for="year-range"></output>
+                <span class="control-row__label" id="observed-label-text">is observed:</span>
+                <output class="sim-value sim-value--boxed" id="observed-output" for="year-range" aria-hidden="true"></output>
+                <!-- Spoken equivalent of the boxed value, e.g. "4200 AD". -->
+                <span class="sr-only" id="observed-sr"></span>
               </div>
             </fieldset>
 
@@ -113,10 +104,11 @@
 
               <div class="control-row sim-row sim-row--slider sim-row--align-slider">
                 <label class="control-row__label" for="dist-range">distance:</label>
+                <!-- aria-valuetext (set in JS) speaks e.g. "3000 light years". -->
                 <input class="control-row__slider sim-slider" type="range" id="dist-range"
                        min="1000" max="10000" step="100" value="3000"
-                       aria-describedby="dist-value">
-                <output class="sim-value" id="dist-value" for="dist-range"></output>
+                       aria-valuetext="3000 light years">
+                <output class="sim-value" id="dist-value" for="dist-range" aria-hidden="true"></output>
               </div>
             </fieldset>
 
